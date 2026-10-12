@@ -12,6 +12,15 @@ load_dotenv()
 st.set_page_config(page_title="Smart Study Assistant", page_icon="📚")
 st.title("📚 Smart Study Assistant")
 
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("GEMINI_API_KEY is not configured.")
+    st.stop()
+
+if "client" not in st.session_state:
+    st.session_state.client = genai.Client(api_key=api_key)
+
 def chunk_text(text, chunk_size=1000, overlap=200):
     chunks, start = [], 0
     while start < len(text):
@@ -41,9 +50,6 @@ def search_documents(query: str) -> str:
     ).embeddings[0].values
     results = collection.query(query_embeddings=[q_embedding], n_results=3)
     return "\n\n".join(results["documents"][0])
-
-if "client" not in st.session_state:
-    st.session_state.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 st.session_state.setdefault("messages", [])
 
